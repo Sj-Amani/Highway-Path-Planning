@@ -121,7 +121,7 @@ This part deals with the trajectory calculation based on the speed and lane outp
 
 ## Code Style
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+[Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
 
 References:
 ---
