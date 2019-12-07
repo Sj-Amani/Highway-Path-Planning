@@ -98,13 +98,13 @@ A really helpful resource for doing this project and creating smooth trajectorie
     git checkout e94b6e1
     ```
 
-## Model Explantion For Generating Paths:
+## Model Explantion For Generating Paths
 
-### Prediction:
+### Prediction
 The prediction module uses a map and data from sensor fusion to generate predictions for what all other dynamic objects in view are likely to do. 
 For example, if the front/back car is changing lane or braking. 
 
-### Behavior Planning:
+### Behavior Planning
 In this part, we decide what is best to do. It means both safety and efficiency. On the safty side, the car should be keep a distance from other cars, no matter it's keeping lane or changing lane. For efficiency, the car should stay in a lane where the traffic flows fast enough.
 The car behave has five states: 
 1.staying in the left lane 
@@ -116,7 +116,7 @@ The car behave has five states:
 Not all states can transition to all other states directly. Apparently, there's no way to make a left lane change if it's aleady in the left most lane; otherwise, it will have to cross the double yellow line and that's very dangerous. Also, if it's in the left most lane, it's not possible to be in the right most lane in the next time step.
 In my implementation, the car constantly check the (potential) time to catch up with the cars in front for all the lanes. If a left lane change or right lane change can potentially increase the time, and it's safe to do so, then it will make a lane change. The creteria for safety is defined as "no car in parallel positions".
 
-### Path Generation:
+### Path Generation
 This part deals with the trajectory calculation based on the speed and lane output from the behavior, car coordinates and past path points. The trajectories generated should be smooth enough, otherwise the jerk will exceed the maximum allowed value. I used the points left in the last time step and a couple of new points obtained from behavior planning as pivots. These pivots are input into the "spline" lib to generate a smooth trajectory. Also, I used coordinates transformation to make the work easier. The transformation was applied both between car fixed coordinate system and world coordinate system, and between world coordinate system and Frenet coordinate system (Please see the top video).
 
 ## Code Style
