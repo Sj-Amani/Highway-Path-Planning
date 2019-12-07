@@ -1,28 +1,34 @@
-# CarND-Path-Planning-Project
-Self-Driving Car Engineer Nanodegree Program
-   
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).  
+# Highway Path Planning
 
-To run the simulator on Mac/Linux, first make the binary file executable with the following command:
-```shell
-sudo chmod u+x {simulator_file_name}
-```
+![Highway_Path_Planning_10X_gif](results/Highway_Path_Planning_10X.gif)
 
+## Overview
+In this project I will `Design a path planner that is able to create smooth, safe paths for the car to follow along a 3 lane highway with traffic by using localization, sensor fusion, and map data`. The main codes are in the "src/" directory.
+
+## Project Introduction   
 ### Goals
-In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
+In this project my goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. The car's localization and sensor fusion data has been provided. There is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
 
 #### The map of the highway is in data/highway_map.txt
 Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
 
 The highway's waypoints loop around so the frenet s value, distance along the road, goes from 0 to 6945.554.
 
-## Basic Build Instructions
+### Simulator.
+You can download the Udacity Term3 Simulator for this project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).  
+
+To run the simulator on Mac/Linux, first make the binary file executable with the following command:
+```shell
+sudo chmod u+x {simulator_file_name}
+```
+
+
+## How to Build and Run this project
 
 1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./path_planning`.
+2. Install uWebSockets: `install-ubuntu.sh` for case of ubuntu
+3. Run the simulator: `./term3_sim.x86_64`
+4. Compile and Run the path planning: `./run`
 
 Here is the data provided from the Simulator to the C++ Program
 
@@ -92,54 +98,49 @@ A really helpful resource for doing this project and creating smooth trajectorie
     git checkout e94b6e1
     ```
 
-## Editor Settings
+## Model Explantion For Generating Paths:
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+### Prediction:
+The prediction module uses a map and data from sensor fusion to generate predictions for what all other dynamic objects in view are likely to do. 
+For example, if the front/back car is changing lane or braking. 
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+### Behavior Planning:
+In this part, we decide what is best to do. It means both safety and efficiency. On the safty side, the car should be keep a distance from other cars, no matter it's keeping lane or changing lane. For efficiency, the car should stay in a lane where the traffic flows fast enough.
+The car behave has five states: 
+1.staying in the left lane 
+2.the middle lane, 
+3.the right lane, 
+4.left lane change, 
+5.right lane change.
+
+Not all states can transition to all other states directly. Apparently, there's no way to make a left lane change if it's aleady in the left most lane; otherwise, it will have to cross the double yellow line and that's very dangerous. Also, if it's in the left most lane, it's not possible to be in the right most lane in the next time step.
+In my implementation, the car constantly check the (potential) time to catch up with the cars in front for all the lanes. If a left lane change or right lane change can potentially increase the time, and it's safe to do so, then it will make a lane change. The creteria for safety is defined as "no car in parallel positions".
+
+### Path Generation:
+This part deals with the trajectory calculation based on the speed and lane output from the behavior, car coordinates and past path points. The trajectories generated should be smooth enough, otherwise the jerk will exceed the maximum allowed value. I used the points left in the last time step and a couple of new points obtained from behavior planning as pivots. These pivots are input into the "spline" lib to generate a smooth trajectory. Also, I used coordinates transformation to make the work easier. The transformation was applied both between car fixed coordinate system and world coordinate system, and between world coordinate system and Frenet coordinate system (Please see the top video).
 
 ## Code Style
 
 Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
 
-## Project Instructions and Rubric
+References:
+---
+https://classroom.udacity.com/nanodegrees
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+http://kluge.in-chemnitz.de/opensource/spline/
 
+https://github.com/nlohmann/json
 
-## Call for IDE Profiles Pull Requests
+https://github.com/udacity/CarND-Path-Planning-Project
 
-Help your fellow students!
+https://markbroerkens.github.io/CarND-Path-Planning-Project/
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
+https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+How Referencing This Project
+---
+If you like my code and you want to use it in your project, please refer it like this:
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
+`Amani, Sajjad. "Practical highway path planning of a vehicle in Traffic using localization, sensor fusion, and map data." GitHub, 8 December 2019, https://github.com/Sj-Amani/Highway-Path-Planning`
 
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
 

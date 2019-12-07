@@ -1,21 +1,19 @@
-#include <uWS/uWS.h>
 #include <fstream>
+#include <math.h>
+#include <uWS/uWS.h>
+#include <chrono>
 #include <iostream>
-#include <string>
+#include <thread>
 #include <vector>
 #include "Eigen-3.3/Eigen/Core"
 #include "Eigen-3.3/Eigen/QR"
-#include "helpers.h"
-#include "spline.h"
-#include <math.h>
-#include <chrono>
-#include <thread>
 #include "json.hpp"
-
+#include "spline.h"
+#include <string>
 
 using namespace std;
 
-// For convenience
+// for convenience
 using json = nlohmann::json;
 
 // For converting back and forth between radians and degrees.
@@ -23,9 +21,9 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
-/* Checks if the SocketIO event has JSON data.
-** If there is data the JSON object in string format will be returned,
-*/ else the empty string "" will be returned.
+// Checks if the SocketIO event has JSON data.
+// If there is data the JSON object in string format will be returned,
+// else the empty string "" will be returned.
 string hasData(string s) {
   auto found_null = s.find("null");
   auto b1 = s.find_first_of("[");
@@ -103,14 +101,14 @@ vector<double> getFrenet(double x, double y, double theta, const vector<double> 
 	double x_x = x - maps_x[prev_wp];
 	double x_y = y - maps_y[prev_wp];
 
-	// Find the projection of x onto n
+	// find the projection of x onto n
 	double proj_norm = (x_x*n_x+x_y*n_y)/(n_x*n_x+n_y*n_y);
 	double proj_x = proj_norm*n_x;
 	double proj_y = proj_norm*n_y;
 
 	double frenet_d = distance(x_x,x_y,proj_x,proj_y);
 
-	// See if d value is positive or negative by comparing it to a center point
+	//see if d value is positive or negative by comparing it to a center point
 
 	double center_x = 1000-maps_x[prev_wp];
 	double center_y = 2000-maps_y[prev_wp];
@@ -122,7 +120,7 @@ vector<double> getFrenet(double x, double y, double theta, const vector<double> 
 		frenet_d *= -1;
 	}
 
-	// Calculate s value
+	// calculate s value
 	double frenet_s = 0;
 	for(int i = 0; i < prev_wp; i++)
 	{
@@ -148,7 +146,7 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 	int wp2 = (prev_wp+1)%maps_x.size();
 
 	double heading = atan2((maps_y[wp2]-maps_y[prev_wp]),(maps_x[wp2]-maps_x[prev_wp]));
-	// The x,y,s along the segment
+	// the x,y,s along the segment
 	double seg_s = (s-maps_s[prev_wp]);
 
 	double seg_x = maps_x[prev_wp]+seg_s*cos(heading);
@@ -166,9 +164,9 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 vector<string> successor_states(string current_state,int lane) {
     /*
-    ** Provides the possible next states given the current state for the FSM 
-    ** discussed in the course, with the exception that lane changes happen 
-    ** instantaneously, so LCL and LCR can only transition back to KL.
+    Provides the possible next states given the current state for the FSM 
+    discussed in the course, with the exception that lane changes happen 
+    instantaneously, so LCL and LCR can only transition back to KL.
     */
     int lanes_available=3;
     vector<string> states;
@@ -237,11 +235,11 @@ int main() {
 
   h.onMessage([&target_lane,&prev_target_lane,&lock,&current_state,&ref_vel,&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
-    /* "42" at the start of the message means there's a websocket message event.
-    ** The 4 signifies a websocket message
-    ** The 2 signifies a websocket event
-    ** auto sdata = string(data).substr(0, length);
-    */cout << sdata << endl;
+    // "42" at the start of the message means there's a websocket message event.
+    // The 4 signifies a websocket message
+    // The 2 signifies a websocket event
+    //auto sdata = string(data).substr(0, length);
+    //cout << sdata << endl;
     if (length && length > 2 && data[0] == '4' && data[1] == '2') {
 
       auto s = hasData(data);
@@ -617,7 +615,9 @@ int main() {
     }
   });
 
-  // We don't need this since we're not using HTTP but if it's removed the program doesn't compile 
+  // We don't need this since we're not using HTTP but if it's removed the
+  // program
+  // doesn't compile :-(
   h.onHttpRequest([](uWS::HttpResponse *res, uWS::HttpRequest req, char *data,
                      size_t, size_t) {
     const std::string s = "<h1>Hello world!</h1>";
